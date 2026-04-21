@@ -69,7 +69,7 @@ const TransactionsFilter: React.FC<ITransactionsFilterProps> = ({
           <option value="">All Statuses</option>
           <option value="Completed">Completed</option>
           <option value="Pending">Pending</option>
-          <option value="Failed">Failed</option>
+          <option value="Denied">Denied</option>
         </select>
       </div>
 

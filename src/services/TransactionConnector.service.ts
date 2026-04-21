@@ -300,7 +300,7 @@ export const getTransactions = async (
       date: item.dateTimePosted || item.date,
       amount: parseFloat(item.amount?.value !== undefined ? item.amount.value : (item.amount || "0")),
       description: item.description,
-      status: item.status,
+      status: item.status === "Void" ? "Denied" : item.status,
       type: item.type
     }));
 
