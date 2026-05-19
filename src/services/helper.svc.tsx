@@ -37,7 +37,7 @@ export function GetContainerOpenData(): Promise<any> {
   return new Promise((resolve) => {
     const getOpenData = container?.tile?.data?.getOpenData;
     const started = Date.now();
-    const timeoutMs = 3000;
+    const timeoutMs = 1000;
     const pollMs = 100;
 
     if (typeof getOpenData !== "function") {
@@ -57,6 +57,11 @@ export function GetContainerOpenData(): Promise<any> {
 
         if (response?.success && openData) {
           resolve(openData);
+          return;
+        }
+
+        if (response && response.success === false) {
+          resolve(null);
           return;
         }
 
@@ -87,36 +92,6 @@ const getFunctionFromString = (functionString: string) => {
   return scope[scopeSplit[scopeSplit.length - 1]];
 };
 
-async function resolveOpenPageData(openData: any): Promise<any> {
-  const connectorRequest = openData?.connectorRequest ?? openData?.dataSource;
-
-  if (
-    !connectorRequest?.connectorName ||
-    !connectorRequest?.connectorVersion ||
-    !connectorRequest?.connectorMethod
-  ) {
-    return openData;
-  }
-
-  const response = await sendRequest(
-    connectorRequest.connectorName,
-    connectorRequest.connectorVersion,
-    connectorRequest.connectorMethod,
-    connectorRequest.params || {}
-  );
-
-  const {
-    dataSource: _dataSource,
-    connectorRequest: _connectorRequest,
-    ...resolvedOpenData
-  } = openData || {};
-
-  return {
-    ...resolvedOpenData,
-    connectorResponse: response
-  };
-}
-
 export function TileInit(nav: Navigator): Promise<string> {
   return new Promise((resolve, reject) => {
     container.tile.data.loadStrings(() =>
@@ -130,8 +105,9 @@ export function TileInit(nav: Navigator): Promise<string> {
               return;
             }
 
-            ProcessMetaAction(metaAction, nav, config);
-            resolve("success");
+            ProcessMetaAction(metaAction, nav, config)
+              .then(() => resolve("success"))
+              .catch(reject);
           });
         },
         () => {
@@ -194,16 +170,16 @@ export function ProcessMetaAction(
           return;
         }
 
-        resolveOpenPageData(openPageAction.openData)
-          .then((componentModel) =>
-            navigator.pushPage({
-              component,
-              props: {
-                componentModel,
-                methods
-              }
-            })
-          )
+        const componentModel = openPageAction.openData;
+
+        navigator
+          .pushPage({
+            component,
+            props: {
+              componentModel,
+              methods
+            }
+          })
           .then(() => {
             const clone = (navigator as any).clone;
             container.tile.navigation.pushPanelWithTitle(

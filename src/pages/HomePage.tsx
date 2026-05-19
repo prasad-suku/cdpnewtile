@@ -10,6 +10,7 @@ import { getMemberProfile, getTransactions } from "../services/TransactionConnec
 import MemberProfile from "../components/MemberProfile";
 import TransactionsFilter from "../components/TransactionsFilter";
 import { ITransaction, ITransactionFilters, IPagination, ISorting } from "../models/Transaction.model";
+import LoadingScreen from "../components/LoadingScreen";
 
 export interface IHomeProps extends IBasePropsModel { }
 
@@ -171,6 +172,10 @@ handleNextPage = () => {
           ref={this.pageContainer}
           style={{ padding: "20px", paddingBottom: "80px", maxWidth: "900px", margin: "0 auto", overflowY: "auto", height: "100%", boxSizing: "border-box" }}
         >
+          {loading && transactions.length === 0 ? (
+            <LoadingScreen className="cdp-page-loader" />
+          ) : (
+            <>
           {profile && (
             <MemberProfile
               firstName={profile.firstName}
@@ -201,7 +206,7 @@ handleNextPage = () => {
           </div>
 
           {loading ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>Loading data...</div>
+            <div className="cdp-inline-loading">Please wait while we retrieve your information.</div>
           ) : transactions.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", background: "#f9fafb", borderRadius: "8px", border: "1px solid #e5e7eb" }}>
               <h3 style={{ margin: 0, color: "#6b7280" }}>No transactions found</h3>
@@ -276,6 +281,8 @@ handleNextPage = () => {
             </div>
           </div>
 
+            </>
+          )}
         </div>
       </Page>
     );

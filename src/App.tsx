@@ -2,10 +2,14 @@ import React, { Component, createElement, createRef, RefObject } from "react";
 import { Navigator } from "react-onsenui";
 import { TileInit, GoToErrorPage } from "./services/helper.svc";
 import { tile } from "./services/container.svc";
+import LoadingScreen from "./components/LoadingScreen";
 
 class App extends Component<any, any> {
   // create a reference to the onsen Navigator
   navEl: RefObject<Navigator> = createRef();
+  state = {
+    loading: true
+  };
 
   /* only render the onsen navigator
     Let the tileInit decide what to do
@@ -24,7 +28,12 @@ class App extends Component<any, any> {
       return createElement(route.component, props);
     };
 
-    return <Navigator id="AppNavigator" key="AppNavigator" renderPage={renderPage} ref={this.navEl} />;
+    return (
+      <>
+        <Navigator id="AppNavigator" key="AppNavigator" renderPage={renderPage} ref={this.navEl} />
+        {this.state.loading && <LoadingScreen className="cdp-startup-loader" />}
+      </>
+    );
   }
 
   componentDidMount() {
@@ -37,16 +46,18 @@ class App extends Component<any, any> {
         .then(
           () => {
             console.log("Tile Init Success");
+            this.setState({ loading: false });
           },
           (msg) => {
             console.log("Tile Init Failed:", msg);
+            this.setState({ loading: false });
             GoToErrorPage(nav);
           }
         );
     }
   }
 
-  waitForCDPGlobals(timeoutMs = 2000, pollMs = 50): Promise<void> {
+  waitForCDPGlobals(timeoutMs = 1000, pollMs = 50): Promise<void> {
     const started = Date.now();
     return new Promise((resolve) => {
       const tick = () => {
